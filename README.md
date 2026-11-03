@@ -73,7 +73,14 @@ The build script downloads both JARs automatically if they are missing.
 
 ### 1. Get the official bundle
 
-Download the official `.apkm` for the version you want from APKMirror:
+```bash
+python3 tools/fetch_official.py --version 5.2.1
+```
+
+Downloads the official `.apkm` from APKMirror automatically (cookie- and
+referer-aware download chain) and verifies the SHA-256 from the table below
+before saving. Full chain description and a manual fallback:
+[`docs/downloading-official.md`](docs/downloading-official.md).
 
 | Version | versionCode | Requires Android | APKMirror release page | SHA-256 of `.apkm` |
 |---|---|---|---|---|
@@ -120,6 +127,7 @@ Or copy the APK to the device and install it from a file manager (enable
 ## Repository layout
 
 ```
+tools/fetch_official.py          download the official .apkm from APKMirror + sha256 check
 tools/build_patched_apk.sh       merge → binary-patch → sign pipeline
 tools/patch_dex.py               the string patch itself (used by the script above)
 tools/test_patch_dex.py          self-tests for the patch logic (no Apple code needed)
@@ -127,6 +135,8 @@ tools/verify_patched_apk.py      post-build verification (androguard)
 tools/locate_root_check.py       dex scanner that finds the su-path checks
 docs/root-detection-analysis.md  full RE findings, per-version class/method map
 docs/building-android-tv.md      TV sideload guide + troubleshooting (Xiaomi example)
+docs/downloading-official.md     APKMirror download chain, anti-bot quirks
+DISCLAIMER.md                    the long-form legal/disclaimer text
 ```
 
 Continuous integration runs the patch-logic self-tests on every push — see
@@ -137,8 +147,9 @@ are not included in, nor distributed by, this repository.
 
 ## Legal
 
-Not legal advice; check your local jurisdiction. This repository distributes
-technique documentation and scripts only, no Apple binaries. The patch was made
-for interoperability research and personal use on own devices. Distributing
-modified Apple Music APKs is prohibited by Apple's terms and has resulted in
-DMCA takedowns elsewhere — this fork will not host APK files.
+**Read [`DISCLAIMER.md`](DISCLAIMER.md) in full.** Summary: this repository
+contains scripts and documentation only — no Apple binaries. It is unaudited,
+unaffiliated research into a 14-byte diagnostic string patch; it does not touch
+DRM, subscription checks, or any content-protection mechanism. Building and
+installing a patched APK is your decision and your responsibility under your
+local law, Apple's terms, and your device's warranty. No warranty of any kind.
