@@ -43,30 +43,8 @@ echo "[*] Merging $INPUT ..."
 java -jar "$TOOLS_DIR/APKEditor.jar" m -i "$INPUT" -o "work/${BASE}-unsigned.apk" >/dev/null
 
 echo "[*] Patching dex strings in work/${BASE}-unsigned.apk ..."
-python3 - "$OLD_STR" "$NEW_STR" "work/${BASE}-unsigned.apk" "work/${BASE}-patched.apk" <<'PY'
-import sys, zipfile
-old, new, src, dst = sys.argv[1:5]
-if len(old.encode()) != len(new.encode()):
-    sys.exit("ERROR: equal-length replacement required (dex constant pool)")
-zin = zipfile.ZipFile(src)
-zout = zipfile.ZipFile(dst, 'w', zipfile.ZIP_DEFLATED, compresslevel=6)
-patched = {}
-for name in zin.namelist():
-    data = zin.read(name)
-    if name.endswith('.dex'):
-        n = data.count(old.encode())
-        if n:
-            patched[name] = n
-            data = data.replace(old.encode(), new.encode())
-    keep = zipfile.ZIP_STORED if zin.getinfo(name).compress_type == zipfile.ZIP_STORED \
-           else zipfile.ZIP_DEFLATED
-    zout.writestr(zin.getinfo(name), data, keep)
-zout.close()
-total = sum(patched.values())
-if total != 1:
-    sys.exit(f"ERROR: expected exactly 1 su-path occurrence, patched {total}: {patched}")
-print("    patched: " + ", ".join(f"{k} ({v}x)" for k, v in patched.items()))
-PY
+"$(dirname "$0")/patch_dex.py" "$OLD_STR" "$NEW_STR" "work/${BASE}-unsigned.apk" "work/${BASE}-patched.apk"
+echo "    OK: exactly 1 occurrence patched"
 
 echo "[*] Zipalign + sign ..."
 java -jar "$TOOLS_DIR/uber-apk-signer.jar" --apks "work/${BASE}-patched.apk" \

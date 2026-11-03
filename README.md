@@ -121,10 +121,19 @@ Or copy the APK to the device and install it from a file manager (enable
 
 ```
 tools/build_patched_apk.sh       merge → binary-patch → sign pipeline
+tools/patch_dex.py               the string patch itself (used by the script above)
+tools/test_patch_dex.py          self-tests for the patch logic (no Apple code needed)
 tools/verify_patched_apk.py      post-build verification (androguard)
 tools/locate_root_check.py       dex scanner that finds the su-path checks
 docs/root-detection-analysis.md  full RE findings, per-version class/method map
+docs/building-android-tv.md      TV sideload guide + troubleshooting (Xiaomi example)
 ```
+
+Continuous integration runs the patch-logic self-tests on every push — see
+`.github/workflows/ci.yml`.
+
+Scripts and documentation are MIT-licensed (`LICENSE`); Apple Music's binaries
+are not included in, nor distributed by, this repository.
 
 ## Legal
 
