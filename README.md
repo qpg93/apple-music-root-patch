@@ -1,85 +1,135 @@
 # Apple-Music-for-Rooted-Devices
 
-Apple Music for Android (since 4.7) refuses to run if it detects a rooted device.
-This repository provides patched builds that disable the root detection, so the app
-can run on rooted TVs, boxes, or other devices that would otherwise be blocked.
+Engineering notes and build tooling for disabling the **root detection** in
+Apple Music for Android — **no APK binaries are hosted here**. Everything in
+this repository is a script, a patch technique, or documentation; you download
+the official app yourself and apply the patch locally.
 
-> This started as a fork of [arabaizzet's repo](https://github.com/arabaizzet/Apple-Music-for-Rooted-Devices),
-> which published v4.8.1 (Oct 2024). This fork extends the same technique to the
-> newer official versions **5.2.1, 6.5.3 and 7.0.0**.
+This project started as a fork of
+[arabaizzet's repo](https://github.com/arabaizzet/Apple-Music-for-Rooted-Devices)
+(which distributed a modified Apple Music 4.8.1). That repo is no longer updated,
+so this fork turned into a *how-to* instead: the same technique, documented and
+automated, confirmed to work unchanged against Apple Music **5.2.1, 6.5.3 and 7.0.0**.
 
-## What devices is this for?
+## Why
 
-Originally for rooted devices, but it is also useful on **stock devices where the
-`/system/bin/su` file path check gives a false positive** — for example Xiaomi TVs,
-where the official app exits at startup.
+Since v4.7 (March 2024), Apple Music for Android refuses to run when it thinks
+the device is rooted. This trips up on:
 
-## How the patch works
+- genuinely rooted devices where `su` lives in one of the checked paths, and
+- stock devices that give a false positive — e.g. some **Xiaomi TVs**, where the
+  official app exits at startup.
 
-Original technique (applied by arabaizzet/wizzeteren to 4.8.1):
+## How the root detection works
 
-- The app's init code runs a check equivalent to
-  `new File("/system/bin/su").exists()`.
-- The string `/system/bin/su` is replaced by a path that does not exist
-  (`/system/bin/applemusicwizzeyeren`), so `exists()` always returns `false`
-  and the root detection never triggers.
+Reverse-engineering details (smali dumps, class names per version) are in
+[`docs/root-detection-analysis.md`](docs/root-detection-analysis.md). In short,
+the app's `Application` class runs a check equivalent to:
 
-Builds in this fork use an equal-length in-place binary patch on the dex string:
+```java
+boolean isDeviceRooted() {
+    return helperCheck()                     // ("test-keys", /system/app/Superuser.apk, /system/xbin/su)
+        || new File("/system/bin/su").exists();
+}
+```
+
+The helper chain passes on stock systems; the discriminating check on blocked
+devices is the `new File("/system/bin/su").exists()` test.
+
+### The patch
+
+Replace the 14-byte string `/system/bin/su` in the dex constant pool with an
+non-existent path of the **same length**:
 
 ```
-/system/bin/su   ->   /system/b1n/su     ("bin" -> "b1n", path does not exist)
+/system/bin/su   →   /system/b1n/su        ("bin" → "b1n")
 ```
 
-This means the dex is **byte-for-byte identical except for 14 bytes** — no smali
-recompilation, no reordering, no other modifications. The base APK and its
-config splits are merged into a single universal APK (with the APKEditor merge
-of the official APKMirror `.apkm` bundle), then zipaligned and re-signed.
+Because the replacement is the same length and the dex is only binary-patched
+(no smali recompilation), the resulting APK is byte-for-byte identical to the
+official one except those 14 bytes — plus zipalign and re-signing (the split
+APKs must also be re-signed, so a full re-sign is unavoidable anyway).
 
-## Downloads
+The original 4.8.1 mod used the same idea with the string
+`/system/bin/applemusicwizzeyeren` (which required smali recompilation, since
+that string is longer).
 
-Go to the [Releases](../../releases) tab. Each release contains one universal APK
-(all architectures included, splits merged).
+**What is not changed:** no DRM modification, no subscription bypass, no
+anything-else. You still need a real Apple ID with an active Apple Music
+subscription to use the app.
 
-| Version | versionCode | Requires Android | Target SDK | SHA-256 |
+## Build your own patched APK
+
+### Prerequisites
+
+- JDK 17+ (only `java` is needed; no compilation of Java sources)
+- [APKEditor 1.4.x](https://github.com/REAndroid/APKEditor/releases) — merges the
+  base APK and config splits of the official `.apkm` bundle into one universal APK
+- [uber-apk-signer 1.3.x](https://github.com/patrickfav/uber-apk-signer/releases) —
+  zipalign + v1/v2/v3 signing with a generated debug key
+- (optional, for verification) Python 3 with `uv` or `pip install androguard`
+
+The build script downloads both JARs automatically if they are missing.
+
+### 1. Get the official bundle
+
+Download the official `.apkm` for the version you want from APKMirror:
+
+| Version | versionCode | Requires Android | APKMirror release page | SHA-256 of `.apkm` |
 |---|---|---|---|---|
-| 5.2.1 | 1545 | 10.0 (API 29) | 35 | `2dfbb54efc475748f3b1cee9ff0a54bd19cda90285768d0cece0292bb6cb5ec2` |
-| 6.5.3 | 1599 | 11.0 (API 30) | 35 | `5706d91f10de78778f20b88295dd26c740b57f1c04486ff370f85d1dacf05304` |
-| 7.0.0 | 1614 | 11.0 (API 30) | 36 | `cc35aef7bff65e0faf0c3f4636b27729fb6448935526aff951ec346d3112c6c9` |
+| 5.2.1 | 1545 | 10.0 (API 29) | [release](https://www.apkmirror.com/apk/apple/apple-music/apple-music-5-2-1-release/) | `1d74cea9d0d6a7c77bf4d004197be52e9e14110414255caa3825142fc19b7962` |
+| 6.5.3 | 1599 | 11.0 (API 30) | [release](https://www.apkmirror.com/apk/apple/apple-music/apple-music-6-5-3-release/) | `a0494d1aac72f9d7901683b9da7df0afe46fae56ac5ad4070c7e265567eabd89` |
+| 7.0.0 | 1614 | 11.0 (API 30) | [release](https://www.apkmirror.com/apk/apple/apple-music/apple-music-7-0-0-release/) | `08219d7f9ab143e4ca5858964c630e8b197881eff0e8dff0742cdc7510bf4b1c` |
 
-Source bases: official no-DRM-removal bundles from APKMirror
-(version 5.2.1, 6.5.3, 7.0.0), merged with
-[APKEditor](https://github.com/REAndroid/APKEditor) and signed with
-[uber-apk-signer](https://github.com/patrickfav/uber-apk-signer).
+*(On the download page pick the **universal / BUNDLE** variant. Verify the
+SHA-256 after downloading.)*
 
-## What is NOT changed
+### 2. Run the build
 
-- No DRM protection modification.
-- No ad removal, no subscription bypass.
-- Only the root check string is touched. Everything else is identical to the
-  official app: you need a real Apple ID with an active Apple Music
-  subscription to use it.
+```bash
+./tools/build_patched_apk.sh AppleMusic-5.2.1.apkm
+# → AppleMusic-5.2.1-patched.apk
+```
 
-## Installation
+The script: merges the bundle → binary-patches every `/system/bin/su` in the
+dexes → reports patch count → zipaligns and signs the result. It fails loudly
+if the patch count is not exactly 1.
 
-If you have the app already installed from a different package, uninstall it first
-(signatures differ, so installing over it will fail with a signature mismatch):
+### 3. Verify (optional but recommended)
+
+```bash
+uv run --with androguard python tools/verify_patched_apk.py AppleMusic-5.2.1-patched.apk
+```
+
+Checks package/versions, that the old string is gone and the replacement
+present, and that the APK is v1+v2+v3 signed.
+
+### 4. Install
+
+If a copy of the app already exists on the device with a different signature,
+uninstall it first (passwords may be asked for at re-login):
 
 ```bash
 adb uninstall com.apple.android.music
-adb install AppleMusic-<version>-patched.apk
+adb install AppleMusic-5.2.1-patched.apk
 ```
 
 Or copy the APK to the device and install it from a file manager (enable
-"Install unknown apps" for the file manager). You need Android 10+ for 5.2.1
-and Android 11+ for 6.5.3/7.0.0.
+"Install unknown apps" for the file manager first).
 
-## Verification of the build
+## Repository layout
 
-For each build, the following was verified with
-[androguard](https://github.com/androguard/androguard):
+```
+tools/build_patched_apk.sh       merge → binary-patch → sign pipeline
+tools/verify_patched_apk.py      post-build verification (androguard)
+tools/locate_root_check.py       dex scanner that finds the su-path checks
+docs/root-detection-analysis.md  full RE findings, per-version class/method map
+```
 
-- Package/permissions identical to the official version.
-- Exactly **1 occurrence** of the `/system/bin/su` string was replaced, 0 remaining.
-- No other dex changes.
-- arm64-v8a, armeabi-v7a, x86, x86_64 native libraries all present.
-- ZIP-aligned and v1+v2+v3 signed.
+## Legal
+
+Not legal advice; check your local jurisdiction. This repository distributes
+technique documentation and scripts only, no Apple binaries. The patch was made
+for interoperability research and personal use on own devices. Distributing
+modified Apple Music APKs is prohibited by Apple's terms and has resulted in
+DMCA takedowns elsewhere — this fork will not host APK files.
