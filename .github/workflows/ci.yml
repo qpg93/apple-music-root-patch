@@ -15,8 +15,10 @@ jobs:
       - name: Self-tests for tools/patch_dex.py (synthetic fixtures)
         run: python3 tools/test_patch_dex.py
 
-      - name: Shell syntax check
-        run: bash -n tools/build_patched_apk.sh
+      - name: Shell syntax checks
+        run: |
+          bash -n tools/build_patched_apk.sh
+          bash -n tools/doctor.sh
 
       - name: Python syntax check
         run: python3 -m py_compile tools/*.py

@@ -1,0 +1,61 @@
+name: Version watch
+
+on:
+  schedule:
+    - cron: "17 6 * * *"      # daily, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    name: Check APKMirror for new Apple Music releases
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Look for a newer version
+        id: check
+        run: |
+          set +e
+          python3 tools/check_new_version.py | tee /tmp/check.log
+          code=${PIPESTATUS[0]}
+          set -e
+          version=$(grep -oP '^NEW_VERSION=\K.*' /tmp/check.log || true)
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$code" = "3" ]; then
+            echo "::warning::version check could not fetch APKMirror (anti-bot?) — skipped"
+          fi
+
+      - name: Open an issue for the new version
+        if: steps.check.outputs.code == '10'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          V="${{ steps.check.outputs.version }}"
+          if [ -n "$(gh issue list --state open --search "Apple Music $V in:title" --json number --jq 'length')" ]; then
+            echo "an open issue for $V already exists"
+            exit 0
+          fi
+          gh issue create \
+            --title "New Apple Music version detected: $V" \
+            --body "$(cat <<EOF
+          APKMirror lists a newer Apple Music release than the ones documented in the README.
+
+          - Version: **$V**
+
+          Follow-up checklist:
+
+          1. Fetch the official bundle: \`python3 tools/fetch_official.py --url <variant-page-url>\`
+             (add the version + SHA-256 to the README table once verified).
+          2. Confirm the root check still exists and where it lives:
+             \`uv run --with androguard python tools/locate_root_check.py AppleMusic-$V.apk\`
+          3. Build: \`./tools/build_patched_apk.sh AppleMusic-$V.apkm\`
+          4. Verify: \`uv run --with androguard python tools/verify_patched_apk.py AppleMusic-$V-patched.apk\`
+          5. Update \`docs/root-detection-analysis.md\` (class names drift between releases)
+             and the README table, then close this issue.
+          EOF
+          )"

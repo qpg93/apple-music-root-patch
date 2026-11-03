@@ -1,5 +1,7 @@
 # Apple-Music-for-Rooted-Devices
 
+**English** | [日本語](README.ja.md) | [Français](README.fr.md) | [简体中文](README.zh-CN.md)
+
 Engineering notes and build tooling for disabling the **root detection** in
 Apple Music for Android — **no APK binaries are hosted here**. Everything in
 this repository is a script, a patch technique, or documentation; you download
@@ -70,6 +72,7 @@ subscription to use the app.
 - (optional, for verification) Python 3 with `uv` or `pip install androguard`
 
 The build script downloads both JARs automatically if they are missing.
+Run `./tools/doctor.sh` first if unsure whether your environment is ready.
 
 ### 1. Get the official bundle
 
@@ -128,11 +131,13 @@ Or copy the APK to the device and install it from a file manager (enable
 
 ```
 tools/fetch_official.py          download the official .apkm from APKMirror + sha256 check
-tools/build_patched_apk.sh       merge → binary-patch → sign pipeline
+tools/doctor.sh                  pre-flight environment check (java/python/curl/disk)
+tools/build_patched_apk.sh       merge → binary-patch → sign pipeline (.apkm or flat .apk)
 tools/patch_dex.py               the string patch itself (used by the script above)
 tools/test_patch_dex.py          self-tests for the patch logic (no Apple code needed)
 tools/verify_patched_apk.py      post-build verification (androguard)
 tools/locate_root_check.py       dex scanner that finds the su-path checks
+tools/check_new_version.py       compares APKMirror's latest release with the table above
 docs/root-detection-analysis.md  full RE findings, per-version class/method map
 docs/building-android-tv.md      TV sideload guide + troubleshooting (Xiaomi example)
 docs/downloading-official.md     APKMirror download chain, anti-bot quirks
@@ -140,7 +145,9 @@ DISCLAIMER.md                    the long-form legal/disclaimer text
 ```
 
 Continuous integration runs the patch-logic self-tests on every push — see
-`.github/workflows/ci.yml`.
+`.github/workflows/ci.yml`. A daily scheduled workflow
+(`.github/workflows/version-watch.yml`) checks APKMirror for a newer Apple Music
+release and opens an issue with the follow-up checklist when one appears.
 
 Scripts and documentation are MIT-licensed (`LICENSE`); Apple Music's binaries
 are not included in, nor distributed by, this repository.
