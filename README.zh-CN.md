@@ -1,4 +1,4 @@
-# Apple-Music-for-Rooted-Devices
+# Apple Music Root Patch
 
 [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md) | **简体中文**
 
@@ -6,10 +6,10 @@ Android 版 Apple Music「**root 检测**」的工程研究记录与构建工具
 **本仓库不托管任何 APK 文件。** 这里只有脚本、补丁技术和文档；官方应用需要
 你自己下载，并在本地应用补丁。
 
-本项目最初是 [arabaizzet 的仓库](https://github.com/arabaizzet/Apple-Music-for-Rooted-Devices)
-（分发修改版 Apple Music 4.8.1）的 fork。由于原仓库已停止更新，本 fork 转而做成一份
-*操作指南*：同样的技术，文档化、工具化，并确认在 Apple Music **5.2.1、6.5.3、7.0.0**
-上无需修改即可适用。
+本项目最初受 [arabaizzet 的仓库](https://github.com/arabaizzet/Apple-Music-for-Rooted-Devices)
+（分发修改版 Apple Music 4.8.1）启发。由于原仓库已停止更新，现已成为一个独立项目，
+围绕同样的技术做成一份*操作指南*：文档化、工具化，并确认在 Apple Music
+**5.2.1、6.5.3、7.0.0** 上无需修改即可适用。
 
 ## 背景
 

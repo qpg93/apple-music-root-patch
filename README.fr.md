@@ -1,4 +1,4 @@
-# Apple-Music-for-Rooted-Devices
+# Apple Music Root Patch
 
 [English](README.md) | [日本語](README.ja.md) | **Français** | [简体中文](README.zh-CN.md)
 
@@ -7,10 +7,10 @@ root** d'Apple Music pour Android — **aucun binaire APK n'est hébergé ici**.
 ce dépôt contient des scripts, une technique de patch et de la documentation ;
 vous téléchargez vous-même l'application officielle et appliquez le patch en local.
 
-Ce projet est né comme fork du [dépôt d'arabaizzet](https://github.com/arabaizzet/Apple-Music-for-Rooted-Devices)
+Ce projet s'inspire du [dépôt d'arabaizzet](https://github.com/arabaizzet/Apple-Music-for-Rooted-Devices)
 (qui distribuait une version modifiée d'Apple Music 4.8.1). Ce dépôt n'étant plus
-mis à jour, ce fork est devenu un *guide pratique* : la même technique, documentée
-et automatisée, confirmée sans changement sur Apple Music **5.2.1, 6.5.3 et 7.0.0**.
+mis à jour, il s'agit désormais d'un projet indépendant construit autour de la même
+technique, documentée et automatisée, confirmée sans changement sur Apple Music **5.2.1, 6.5.3 et 7.0.0**.
 
 ## Pourquoi
 

@@ -1,4 +1,4 @@
-# Apple-Music-for-Rooted-Devices
+# Apple Music Root Patch
 
 [English](README.md) | **日本語** | [Français](README.fr.md) | [简体中文](README.zh-CN.md)
 
@@ -7,8 +7,8 @@ Android 版 Apple Music の **root 検出を無効化**するための調査記�
 ドキュメントのみで、公式アプリはご自身でダウンロードし、ローカルでパッチを適用します。
 
 本プロジェクトは [arabaizzet のリポジトリ](https://github.com/arabaizzet/Apple-Music-for-Rooted-Devices)
-（Apple Music 4.8.1 の改造版を配布）のフォークとして始まりました。元リポジトリは更新が
-止まっているため、本フォークは「やり方（how-to）」に舵を切りました。同じ手法を文書化・
+（Apple Music 4.8.1 の改造版を配布）に着想を得て始まりました。元リポジトリは更新が
+止まっているため、現在は独立したプロジェクトとして「やり方（how-to）」に舵を切りました。同じ手法を文書化・
 自動化し、Apple Music **5.2.1 / 6.5.3 / 7.0.0** でも変更なしで有効であることを確認済みです。
 
 ## 背景
