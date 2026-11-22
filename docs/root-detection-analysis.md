@@ -12,8 +12,11 @@ patch in `tools/build_patched_apk.sh` is sufficient.
 | 5.2.1 | 1545 | 29 / 35 | `AppleMusicApplication->g()` | classes.dex | `Ltd/h;` |
 | 6.5.3 | 1599 | 30 / 35 | `AppleMusicApplication->g()` | classes2.dex | `LXe/h;` |
 | 7.0.0 | 1614 | 30 / 36 | `AppleMusicApplication->i()` | classes2.dex | `Lwg/h;` |
+| 7.0.3 (arm64 preview) | 1626 | 30 / 36 | `AppleMusicApplication->h()` | classes2.dex | `Lvg/h;` |
 
-Only the obfuscated names drift between versions; the logic is identical.
+The entry-point logic is identical across these versions. For 7.0.3, see the
+[build and verification notes](apple-music-7.0.3.md); runtime behavior has not
+been tested.
 
 ## The check chain
 

@@ -85,6 +85,8 @@ python3 tools/fetch_official.py --version 5.2.1
 
 *（在下载页请选择 **universal / BUNDLE** 变体。下载后请校验 SHA-256。）*
 
+**7.0.3 arm64 测试版：** APKPure 的 XAPK（构建号 1626，需要 Android 11 或更新版本）已完成签名校验和补丁构建，尚未实机测试。[下载来源、校验值和构建步骤](docs/apple-music-7.0.3.md)。
+
 ### 2. 执行构建
 
 ```bash

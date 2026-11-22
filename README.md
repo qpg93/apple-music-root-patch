@@ -94,6 +94,10 @@ before saving. Full chain description and a manual fallback:
 *(On the download page pick the **universal / BUNDLE** variant. Verify the
 SHA-256 after downloading.)*
 
+**7.0.3 arm64 preview:** A signed APKPure XAPK (build 1626, Android 11+)
+passes static checks after patching, but has not been tested on a device.
+See the [source, checksum, and build steps](docs/apple-music-7.0.3.md).
+
 ### 2. Run the build
 
 ```bash
